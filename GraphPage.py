@@ -1,49 +1,57 @@
-import sys
-import matplotlib.pyplot as plt
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QSizePolicy
-from PyQt6.QtGui import QPixmap
-from io import BytesIO
-from PyQt6.QtCore import QDate
-from datetime import datetime
-from matplotlib.dates import date2num
-import sys
+from PyQt6.QtWidgets import QMessageBox, QSizePolicy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-import random
 
 
 class MatplotlibWidget(FigureCanvas):
-    def __init__(self, coin_data, width=5, height=5, dpi=100):
+    def __init__(self, coin_data, tabs, main_window, width=5, height=5, dpi=100):
         self.coin_data = coin_data
+        self.tabs = tabs
+        self.main_window = main_window
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
+        self.fig.subplots_adjust(left=0.175)
         FigureCanvas.__init__(self, self.fig)
         FigureCanvas.setSizePolicy(
             self, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         FigureCanvas.updateGeometry(self)
 
-    def plot(self):
-        portfolio = [["BTC", 1, QDate(2019, 1, 1), QDate(2019, 1, 2)]]
+    def plot(self, portfolio):
+        self.axes.clear()
+        purchase_date = portfolio[0][2]
+        selling_date = portfolio[0][3]
+        if purchase_date == selling_date:
+            QMessageBox.critical(
+                self,
+                "Error",
+                "Purchase Date is on or after Selling Date (which is not possible). Please Select a new pair of dates.",
+            )
+            self.switch_tabs()
+            return
+        self.main_window.resize(600, 525)
         for stock in portfolio:
             data = []
             name = stock[0]
-            amount = stock[1]
-            days_between = stock[2].daysTo(stock[3])
+            days_between = purchase_date.daysTo(selling_date) + 1
+
             for i in range(0, days_between):
                 print("day" + str(i))
-                print(self.coin_data[name][stock[2].addDays(i)])
-                data.append(self.coin_data[name][stock[2].addDays(i)])
+                print(self.coin_data[name][purchase_date.addDays(i)])
+                data.append(self.coin_data[name][purchase_date.addDays(i)])
             self.axes.plot(data, "r-")
 
         self.axes.set_title("Stock Price Graph")
         self.axes.xaxis.set_major_locator(MaxNLocator(integer=True))
-        self.axes.set_xlabel("Days")  # Set the label for the x-axis
+        self.axes.set_xlabel(
+            "Days since " + purchase_date.toString("dd-MM-yyyy")
+        )  # Set the label for the x-axis
         self.axes.set_ylabel("Price")
         self.draw()
+
+    def switch_tabs(self):
+        self.tabs.setCurrentIndex(0)
 
     # def __init__(self, coin_data, portfolio):
     #     super().__init__()

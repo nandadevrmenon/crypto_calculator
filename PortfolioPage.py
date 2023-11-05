@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QFont
 from PyQt6 import QtCore
 from decimal import Decimal
+from StockSelector import StockSelector
 
 
 class PortfolioPage(QWidget):
@@ -37,36 +38,40 @@ class PortfolioPage(QWidget):
 
         main_layout = QVBoxLayout(self)
 
-        # Create a QGridLayout for Stcok Purchased and Amount
-        stock_fields_grid_layout = QGridLayout()
-        label_stock_purchased = QLabel("Stock Purchased:")
-        label_amount_purchased = QLabel("Amount Purchased:")
-        self.combo_for_stocks = (
-            QComboBox()
-        )  # for selecting one out of different stock names
-
-        for x in self.stocks:
-            self.combo_for_stocks.addItem(x)
-
-        self.stock_amount_spin = QSpinBox()  # to select the number of stocks to buy
-        self.stock_amount_spin.setMaximum(1000000)
-        self.stock_amount_spin.setMinimum(1)
-
-        label_stock_purchased.setSizePolicy(
-            QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum
+        stock_fields_grid_layout = StockSelector(
+            self, self.stocks, self.update_calculations
         )
-        label_amount_purchased.setSizePolicy(
-            QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum
-        )
-        self.combo_for_stocks.setMinimumSize(100, 30)
-        self.combo_for_stocks.setMaximumSize(200, 30)
-        self.stock_amount_spin.setMinimumSize(70, 30)
-        self.stock_amount_spin.setMaximumSize(200, 30)
 
-        stock_fields_grid_layout.addWidget(label_stock_purchased, 0, 0)
-        stock_fields_grid_layout.addWidget(self.combo_for_stocks, 0, 1)
-        stock_fields_grid_layout.addWidget(label_amount_purchased, 0, 2)
-        stock_fields_grid_layout.addWidget(self.stock_amount_spin, 0, 3)
+        # # Create a QGridLayout for Stcok Purchased and Amount
+        # stock_fields_grid_layout = QGridLayout()
+        # label_stock_purchased = QLabel("Stock Purchased:")
+        # label_amount_purchased = QLabel("Amount Purchased:")
+        # self.combo_for_stocks = (
+        #     QComboBox()
+        # )  # for selecting one out of different stock names
+
+        # for x in self.stocks:
+        #     self.combo_for_stocks.addItem(x)
+
+        # self.stock_amount_spin = QSpinBox()  # to select the number of stocks to buy
+        # self.stock_amount_spin.setMaximum(1000000)
+        # self.stock_amount_spin.setMinimum(1)
+
+        # label_stock_purchased.setSizePolicy(
+        #     QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum
+        # )
+        # label_amount_purchased.setSizePolicy(
+        #     QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum
+        # )
+        # self.combo_for_stocks.setMinimumSize(100, 30)
+        # self.combo_for_stocks.setMaximumSize(200, 30)
+        # self.stock_amount_spin.setMinimumSize(70, 30)
+        # self.stock_amount_spin.setMaximumSize(200, 30)
+
+        # stock_fields_grid_layout.addWidget(label_stock_purchased, 0, 0)
+        # stock_fields_grid_layout.addWidget(self.combo_for_stocks, 0, 1)
+        # stock_fields_grid_layout.addWidget(label_amount_purchased, 0, 2)
+        # stock_fields_grid_layout.addWidget(self.stock_amount_spin, 0, 3)
 
         # Create a Grid Layout for the Date Fields
         date_field_grid = QGridLayout()
@@ -115,8 +120,8 @@ class PortfolioPage(QWidget):
         calculations_grid.addWidget(self.profit_value, 2, 1)
 
         # Connect all inputs to the update UI function as change in any Input shiouuld trigger a recalculation and thus an update in the UI
-        self.combo_for_stocks.currentIndexChanged.connect(self.update_calculations)
-        self.stock_amount_spin.valueChanged.connect(self.update_calculations)
+        # self.combo_for_stocks.currentIndexChanged.connect(self.update_calculations)
+        # self.stock_amount_spin.valueChanged.connect(self.update_calculations)
         self.date_purchased_selector.selectionChanged.connect(
             self.purchase_date_change_handler
         )
@@ -173,7 +178,6 @@ class PortfolioPage(QWidget):
             selling_date = self.date_sold_selector.selectedDate()
             self.date_bought_value.setText(purchase_date.toString("dd-MM-yyyy"))
             self.date_sold_value.setText(selling_date.toString("dd-MM-yyyy"))
-            # if selling_date >= purchase_date:
             buying_price = self.coin_data[stock_purchased][purchase_date] * int(
                 amount_purchased
             )
@@ -191,3 +195,14 @@ class PortfolioPage(QWidget):
 
         except Exception as e:
             print(e)
+
+    def get_portfolio(self):
+        portfolio = []
+        stock_purchased = self.combo_for_stocks.currentText()
+        amount_purchased = self.stock_amount_spin.value()
+        purchase_date = self.date_purchased_selector.selectedDate()
+        selling_date = self.date_sold_selector.selectedDate()
+        portfolio.append(
+            [stock_purchased, amount_purchased, purchase_date, selling_date]
+        )
+        return portfolio
