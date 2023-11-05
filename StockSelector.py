@@ -20,27 +20,26 @@ from PyQt6 import QtCore
 from decimal import Decimal
 
 
-class StockSelector(QWidget):
+class StockSelector(QGridLayout):
     def __init__(self, stock_names, update_calculations):
         super().__init__()
         Qt = QtCore.Qt
 
         self.stock_names = stock_names
         self.update_calculations = update_calculations
-        self.stocks = sorted(self.coin_data.keys())
         self.color_red = "color:#b30406;"
         self.color_black = "color:black;"
         self.color_green = "color:#098709;"
 
         # Create a QGridLayout for Stcok Purchased and Amount
-        stock_fields_grid_layout = QGridLayout()
+        # stock_fields_grid_layout = QGridLayout()
         label_stock_purchased = QLabel("Stock Purchased:")
         label_amount_purchased = QLabel("Amount Purchased:")
         self.combo_for_stocks = (
             QComboBox()
         )  # for selecting one out of different stock names
 
-        for x in self.stocks:
+        for x in self.stock_names:
             self.combo_for_stocks.addItem(x)
 
         self.stock_amount_spin = QSpinBox()  # to select the number of stocks to buy
@@ -58,10 +57,10 @@ class StockSelector(QWidget):
         self.stock_amount_spin.setMinimumSize(70, 30)
         self.stock_amount_spin.setMaximumSize(200, 30)
 
-        stock_fields_grid_layout.addWidget(label_stock_purchased, 0, 0)
-        stock_fields_grid_layout.addWidget(self.combo_for_stocks, 0, 1)
-        stock_fields_grid_layout.addWidget(label_amount_purchased, 0, 2)
-        stock_fields_grid_layout.addWidget(self.stock_amount_spin, 0, 3)
+        self.addWidget(label_stock_purchased, 0, 0)
+        self.addWidget(self.combo_for_stocks, 0, 1)
+        self.addWidget(label_amount_purchased, 0, 2)
+        self.addWidget(self.stock_amount_spin, 0, 3)
 
     def get_portfolio(self):
         portfolio = []

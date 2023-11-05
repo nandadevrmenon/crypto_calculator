@@ -38,9 +38,7 @@ class PortfolioPage(QWidget):
 
         main_layout = QVBoxLayout(self)
 
-        stock_fields_grid_layout = StockSelector(
-            self, self.stocks, self.update_calculations
-        )
+        stock_fields_grid_layout = StockSelector(self.stocks, self.update_calculations)
 
         # # Create a QGridLayout for Stcok Purchased and Amount
         # stock_fields_grid_layout = QGridLayout()
