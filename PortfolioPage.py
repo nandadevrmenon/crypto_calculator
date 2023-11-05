@@ -38,10 +38,12 @@ class PortfolioPage(QWidget):
 
         main_layout = QVBoxLayout(self)
 
-        stock_fields_grid_layout = StockSelector(self.stocks, self.update_calculations)
+        self.stock_fields_grid_layout = StockSelector(
+            self.coin_data, self.update_calculations
+        )
 
         # # Create a QGridLayout for Stcok Purchased and Amount
-        # stock_fields_grid_layout = QGridLayout()
+        # self.stock_fields_grid_layout = QGridLayout()
         # label_stock_purchased = QLabel("Stock Purchased:")
         # label_amount_purchased = QLabel("Amount Purchased:")
         # self.combo_for_stocks = (
@@ -66,17 +68,17 @@ class PortfolioPage(QWidget):
         # self.stock_amount_spin.setMinimumSize(70, 30)
         # self.stock_amount_spin.setMaximumSize(200, 30)
 
-        # stock_fields_grid_layout.addWidget(label_stock_purchased, 0, 0)
-        # stock_fields_grid_layout.addWidget(self.combo_for_stocks, 0, 1)
-        # stock_fields_grid_layout.addWidget(label_amount_purchased, 0, 2)
-        # stock_fields_grid_layout.addWidget(self.stock_amount_spin, 0, 3)
+        # self.stock_fields_grid_layout.addWidget(label_stock_purchased, 0, 0)
+        # self.stock_fields_grid_layout.addWidget(self.combo_for_stocks, 0, 1)
+        # self.stock_fields_grid_layout.addWidget(label_amount_purchased, 0, 2)
+        # self.stock_fields_grid_layout.addWidget(self.stock_amount_spin, 0, 3)
 
         # Create a Grid Layout for the Date Fields
         date_field_grid = QGridLayout()
         date_bought_label = QLabel("Date Purchased:")
         date_sold_label = QLabel("Date Sold:")
-        self.date_bought_value = QLabel("random date ehrer")
-        self.date_sold_value = QLabel(" another random daete")
+        self.date_bought_value = QLabel("")
+        self.date_sold_value = QLabel("")
         self.date_purchased_selector = QCalendarWidget()
         self.date_sold_selector = QCalendarWidget()
 
@@ -85,6 +87,13 @@ class PortfolioPage(QWidget):
         )
         self.date_sold_selector.setVerticalHeaderFormat(
             QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader
+        )
+
+        self.date_purchased_selector.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+        self.date_sold_selector.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
 
         self.date_purchased_selector.setSelectedDate(QDate(2022, 1, 1))
@@ -127,11 +136,11 @@ class PortfolioPage(QWidget):
             self.selling_date_change_handler
         )
 
-        main_layout.addLayout(stock_fields_grid_layout)
         main_layout.addLayout(date_field_grid)
+        main_layout.addLayout(self.stock_fields_grid_layout)
         main_layout.addLayout(calculations_grid)
 
-        # Apply style to all child QLabel widgets
+        # updaeta profit loss calculations and also update date value labels
         self.update_calculations()
 
     def purchase_date_change_handler(self):
@@ -152,44 +161,46 @@ class PortfolioPage(QWidget):
         else:
             self.date_bought_value.setStyleSheet(self.color_black)
             self.date_sold_value.setStyleSheet(self.color_black)
+            self.stock_fields_grid_layout.update_stock_costs(self.get_dates())
             self.update_calculations()
 
     def selling_date_change_handler(self):
         selling_date = self.date_sold_selector.selectedDate()
         purchase_date = self.date_purchased_selector.selectedDate()
-        stock_purchased = self.combo_for_stocks.currentText()
-        amount_sold = self.stock_amount_spin.value()
-        price = self.coin_data[stock_purchased][selling_date] * int(amount_sold)
+        # stock_purchased = self.combo_for_stocks.currentText()
+        # amount_sold = self.stock_amount_spin.value()
+        # price = self.coin_data[stock_purchased][selling_date] * int(amount_sold)
         if selling_date < purchase_date:
             self.date_bought_value.setText("Select New Purchase Date")
             self.date_bought_value.setStyleSheet(self.color_red)
         else:
+            self.stock_fields_grid_layout.update_stock_costs(self.get_dates())
             self.update_calculations()
             self.date_sold_value.setStyleSheet(self.color_black)
             self.date_bought_value.setStyleSheet(self.color_black)
 
     def update_calculations(self):
         try:
-            stock_purchased = self.combo_for_stocks.currentText()
-            amount_purchased = self.stock_amount_spin.value()
+            # stock_purchased = self.combo_for_stocks.currentText()
+            # amount_purchased = self.stock_amount_spin.value()
             purchase_date = self.date_purchased_selector.selectedDate()
             selling_date = self.date_sold_selector.selectedDate()
             self.date_bought_value.setText(purchase_date.toString("dd-MM-yyyy"))
             self.date_sold_value.setText(selling_date.toString("dd-MM-yyyy"))
-            buying_price = self.coin_data[stock_purchased][purchase_date] * int(
-                amount_purchased
-            )
-            selling_price = self.coin_data[stock_purchased][selling_date] * int(
-                amount_purchased
-            )
-            profit = selling_price - buying_price
-            self.purchase_price_value.setText("€" + str(buying_price))
-            self.selling_price_value.setText("€" + str(selling_price))
-            self.profit_value.setText("€" + str(profit))
-            if profit < 0:
-                self.profit_value.setStyleSheet(self.color_red)
-            else:
-                self.profit_value.setStyleSheet(self.color_green)
+            # buying_price = self.coin_data[stock_purchased][purchase_date] * int(
+            #     amount_purchased
+            # )
+            # selling_price = self.coin_data[stock_purchased][selling_date] * int(
+            #     amount_purchased
+            # )
+            # profit = selling_price - buying_price
+            # self.purchase_price_value.setText("€" + str(buying_price))
+            # self.selling_price_value.setText("€" + str(selling_price))
+            # self.profit_value.setText("€" + str(profit))
+            # if profit < 0:
+            #     self.profit_value.setStyleSheet(self.color_red)
+            # else:
+            #     self.profit_value.setStyleSheet(self.color_green)
 
         except Exception as e:
             print(e)
@@ -204,3 +215,9 @@ class PortfolioPage(QWidget):
             [stock_purchased, amount_purchased, purchase_date, selling_date]
         )
         return portfolio
+
+    def get_dates(self):
+        return [
+            self.date_purchased_selector.selectedDate(),
+            self.date_sold_selector.selectedDate(),
+        ]

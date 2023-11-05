@@ -46,8 +46,8 @@ class CryptoTradeProfitCalculator(QMainWindow):
         self.setCentralWidget(self.tabs)
 
         self.setWindowTitle("Two Tab App")
-        self.resize(500, 525)
-        self.setMaximumSize(610, 900)
+        self.resize(550, 525)
+        self.setMaximumSize(610, 740)
         self.setWindowTitle("CryptoCalculator")
         # self.setStyleSheet("QMainWindow{background-color: #d4d4d4;}")
 
@@ -55,7 +55,7 @@ class CryptoTradeProfitCalculator(QMainWindow):
         if index == 1:  # Check if the "Graph" tab is selected (index 1)
             self.graph_tab.plot(self.calculation_tab.get_portfolio())
         else:  # or if the portoflio tab is selected
-            self.resize(500, 525)  # bring down the size of the window
+            self.resize(550, 525)  # bring down the size of the window
 
     ################ YOU DO NOT HAVE TO EDIT CODE BELOW THIS POINT  ########################################################
 
