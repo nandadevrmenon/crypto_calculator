@@ -223,15 +223,20 @@ class PortfolioPage(QWidget):
         except Exception as e:
             print(e)
 
-    def get_portfolio(self):
-        portfolio = []
-        stock_purchased = self.combo_for_stocks.currentText()
-        amount_purchased = self.stock_amount_spin.value()
-        purchase_date = self.date_purchased_selector.selectedDate()
-        selling_date = self.date_sold_selector.selectedDate()
-        portfolio.append(
-            [stock_purchased, amount_purchased, purchase_date, selling_date]
-        )
+    # def get_portfolio(self):
+    #     portfolio = []
+    #     stock_purchased = self.combo_for_stocks.currentText()
+    #     amount_purchased = self.stock_amount_spin.value()
+    #     purchase_date = self.date_purchased_selector.selectedDate()
+    #     selling_date = self.date_sold_selector.selectedDate()
+    #     portfolio.append(
+    #         [stock_purchased, amount_purchased, purchase_date, selling_date]
+    #     )
+    #     return portfolio
+
+    def get_full_portfolio(self):
+        portfolio = self.stock_fields_grid_layout.get_stock_portfolio()
+        portfolio.insert(0, self.get_dates())
         return portfolio
 
     def get_dates(self):

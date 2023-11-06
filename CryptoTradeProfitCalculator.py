@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QFont
 from PyQt6 import QtCore
 from PortfolioPage import PortfolioPage
-from GraphPage import MatplotlibWidget
+from GraphPage import GraphPage
 
 
 class CryptoTradeProfitCalculator(QMainWindow):
@@ -33,7 +33,9 @@ class CryptoTradeProfitCalculator(QMainWindow):
         self.tabs.currentChanged.connect(self.tab_changed)
 
         self.calculation_tab = PortfolioPage(self.data)
-        self.graph_tab = MatplotlibWidget(self.data, self.tabs, self)
+        self.graph_tab = GraphPage(
+            self.data, self.tabs, self, self.calculation_tab
+        )  # pass in the coin data , the tabs (to switch back to calculation tab whenthere is an error), the parent widget( to the show the  error), and the portoflio page (to get the portfolio to make the graph)
 
         self.calculation_tab.setFont(arial_font)
         self.graph_tab.setFont(arial_font)
@@ -47,12 +49,13 @@ class CryptoTradeProfitCalculator(QMainWindow):
         self.resize(550, 525)
         self.setMaximumSize(610, 800)
         self.setWindowTitle("CryptoCalculator")
-        # print(self.data["AAVE"][QDate(2019, 6, 29)])
-        # self.setStyleSheet("QMainWindow{background-color: #d4d4d4;}")
 
     def tab_changed(self, index):
         if index == 1:  # Check if the "Graph" tab is selected (index 1)
-            self.graph_tab.plot(self.calculation_tab.get_portfolio())
+            # self.graph_tab.plot(self.calculation_tab.get_portfolio())
+            self.graph_tab.initialize_radio_buttons()
+            self.graph_tab.plot_graph()
+            # self.graph_tab.matplotlib_widget.plot(radio_button)
         else:  # or if the portoflio tab is selected
             self.resize(550, 750)  # bring down the size of the window
 
