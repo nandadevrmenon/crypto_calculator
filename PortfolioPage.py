@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QSizePolicy,
+    QSpacerItem,
 )
 from PyQt6.QtGui import QFont
 from PyQt6 import QtCore
@@ -24,7 +25,7 @@ from StockSelector import StockSelector
 class PortfolioPage(QWidget):
     def __init__(self, coin_data):
         super().__init__()
-        Qt = QtCore.Qt
+        self.Qt = QtCore.Qt
 
         self.coin_data = coin_data
         self.stocks = sorted(self.coin_data.keys())
@@ -39,7 +40,7 @@ class PortfolioPage(QWidget):
         main_layout = QVBoxLayout(self)
 
         self.stock_fields_grid_layout = StockSelector(
-            self.coin_data, self.update_calculations
+            self, self.coin_data, self.update_calculations
         )
 
         # # Create a QGridLayout for Stcok Purchased and Amount
@@ -119,12 +120,27 @@ class PortfolioPage(QWidget):
         self.profit_label = QLabel("Profit Made:")
         self.profit_value = QLabel("")
 
+        purchase_price_label.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
+        )
+        selling_price_label.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
+        )
+        self.profit_label.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
+        )
+
         calculations_grid.addWidget(purchase_price_label, 0, 0)
         calculations_grid.addWidget(self.purchase_price_value, 0, 1)
         calculations_grid.addWidget(selling_price_label, 1, 0)
         calculations_grid.addWidget(self.selling_price_value, 1, 1)
         calculations_grid.addWidget(self.profit_label, 2, 0)
         calculations_grid.addWidget(self.profit_value, 2, 1)
+
+        horizontal_spacer = QSpacerItem(
+            40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+        calculations_grid.addItem(horizontal_spacer, 3, 0)
 
         # Connect all inputs to the update UI function as change in any Input shiouuld trigger a recalculation and thus an update in the UI
         # self.combo_for_stocks.currentIndexChanged.connect(self.update_calculations)
@@ -161,8 +177,8 @@ class PortfolioPage(QWidget):
         else:
             self.date_bought_value.setStyleSheet(self.color_black)
             self.date_sold_value.setStyleSheet(self.color_black)
-            self.stock_fields_grid_layout.update_stock_costs(self.get_dates())
             self.update_calculations()
+            self.stock_fields_grid_layout.update_stock_costs(self.get_dates())
 
     def selling_date_change_handler(self):
         selling_date = self.date_sold_selector.selectedDate()
@@ -174,33 +190,35 @@ class PortfolioPage(QWidget):
             self.date_bought_value.setText("Select New Purchase Date")
             self.date_bought_value.setStyleSheet(self.color_red)
         else:
-            self.stock_fields_grid_layout.update_stock_costs(self.get_dates())
-            self.update_calculations()
             self.date_sold_value.setStyleSheet(self.color_black)
             self.date_bought_value.setStyleSheet(self.color_black)
+            self.update_calculations()
+            self.stock_fields_grid_layout.update_stock_costs(self.get_dates())
 
     def update_calculations(self):
         try:
-            # stock_purchased = self.combo_for_stocks.currentText()
-            # amount_purchased = self.stock_amount_spin.value()
-            purchase_date = self.date_purchased_selector.selectedDate()
-            selling_date = self.date_sold_selector.selectedDate()
-            self.date_bought_value.setText(purchase_date.toString("dd-MM-yyyy"))
-            self.date_sold_value.setText(selling_date.toString("dd-MM-yyyy"))
-            # buying_price = self.coin_data[stock_purchased][purchase_date] * int(
-            #     amount_purchased
-            # )
-            # selling_price = self.coin_data[stock_purchased][selling_date] * int(
-            #     amount_purchased
-            # )
-            # profit = selling_price - buying_price
-            # self.purchase_price_value.setText("€" + str(buying_price))
-            # self.selling_price_value.setText("€" + str(selling_price))
-            # self.profit_value.setText("€" + str(profit))
-            # if profit < 0:
-            #     self.profit_value.setStyleSheet(self.color_red)
-            # else:
-            #     self.profit_value.setStyleSheet(self.color_green)
+            portfolio = self.stock_fields_grid_layout.get_stock_portfolio()
+            dates = self.get_dates()
+
+            total_purchase_cost = 0
+            total_selling_price = 0
+
+            for stock in portfolio:
+                buying_cost = self.coin_data[stock[0]][dates[0]] * int(stock[1])
+                selling_price = self.coin_data[stock[0]][dates[1]] * int(stock[1])
+                total_purchase_cost += buying_cost
+                total_selling_price += selling_price
+
+            total_selling_price = round(total_selling_price, 3)
+            total_purchase_cost = round(total_purchase_cost, 3)
+            profit = round(total_selling_price - total_purchase_cost, 3)
+            self.purchase_price_value.setText("€" + str(total_purchase_cost))
+            self.selling_price_value.setText("€" + str(total_selling_price))
+            self.profit_value.setText("€" + str(profit))
+            if profit < 0:
+                self.profit_value.setStyleSheet(self.color_red)
+            else:
+                self.profit_value.setStyleSheet(self.color_green)
 
         except Exception as e:
             print(e)
