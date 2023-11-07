@@ -1,8 +1,6 @@
 # Name: Nandadev Rajeev Menon
 # Student Number : 3069713
 
-
-# TODO: Delete the above, and include in a comment your name and student number
 # TODO: Remember to fully comment your code
 # TODO: Include a comment 'EXTRA FEATURE' and explain what your Extra Feature does
 # TODO: Don't forget to document your design choices in your UI Design Document
@@ -26,11 +24,17 @@ class CryptoTradeProfitCalculator(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        arial_font = QFont("Helvetica", 12)
-        self.data = self.make_data()
-        self.tabs = QTabWidget()
+        arial_font = QFont(
+            "Helvetica", 12
+        )  # set font to helvetica size 12 and use it for whole app
+        self.data = self.make_data()  # get coin data
+        self.tabs = (
+            QTabWidget()
+        )  # use tab layout for the app as we have portfolio tab and grgaph tab
 
-        self.tabs.currentChanged.connect(self.tab_changed)
+        self.tabs.currentChanged.connect(
+            self.tab_changed
+        )  # we need to trigger size change and render the first graph on tab change
 
         self.calculation_tab = PortfolioPage(self.data)
         self.graph_tab = GraphPage(
@@ -43,7 +47,7 @@ class CryptoTradeProfitCalculator(QMainWindow):
         self.tabs.addTab(self.calculation_tab, "Portfolio")
         self.tabs.addTab(self.graph_tab, "Graph")
 
-        self.setCentralWidget(self.tabs)
+        self.setCentralWidget(self.tabs)  # make the tab widget centered
 
         self.setWindowTitle("Two Tab App")
         self.resize(550, 525)
@@ -52,10 +56,8 @@ class CryptoTradeProfitCalculator(QMainWindow):
 
     def tab_changed(self, index):
         if index == 1:  # Check if the "Graph" tab is selected (index 1)
-            # self.graph_tab.plot(self.calculation_tab.get_portfolio())
-            self.graph_tab.initialize_radio_buttons()
-            self.graph_tab.plot_graph()
-            # self.graph_tab.matplotlib_widget.plot(radio_button)
+            self.graph_tab.initialize_radio_buttons()  # initialize the radio buttons based on stocks in portfolio
+            self.graph_tab.plot_graph()  # plot the first graph
         else:  # or if the portoflio tab is selected
             self.resize(550, 750)  # bring down the size of the window
 

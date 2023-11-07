@@ -17,11 +17,11 @@ class GraphPage(QWidget):
     def __init__(self, coin_data, tabs, main_window, calculation_tab):
         super().__init__()
         Qt = QtCore.Qt
-        self.calculation_tab = calculation_tab
-        # Create a main layout for the custom widget
+        self.calculation_tab = calculation_tab  # we need instance of calc_tab because we get the portfolio from that tab
+
         main_layout = QVBoxLayout()
 
-        # Create the Matplotlib graph widget
+        # we pass in coin_data ref,the tabs(so we can change tabs  from this class), the main window ( so we can put up errors) and the calc_tab ref (so we can get latest instance of the portfolio)
         self.matplotlib_widget = MatplotlibWidget(
             coin_data, tabs, main_window, self.calculation_tab
         )
@@ -30,26 +30,27 @@ class GraphPage(QWidget):
         self.radio_button_layout = QHBoxLayout()
 
         self.initialize_radio_buttons()
-        self.clicked_button = None
-        self.button_group.buttonClicked.connect(
+
+        self.clicked_button = (
+            None  # we use this variable for deciding which stock's graph to plot
+        )
+        self.button_group.buttonClicked.connect(  # even thoguh we pass in a radio_button when it changes, we can't rely on this approach to draw the graph the first time as we hardcode button1 as the selected button
             lambda button: self.handle_radio_button_change(button)
         )
+
         self.radio_button_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Add the horizontal layout with radio buttons to the main layout
         main_layout.addLayout(self.radio_button_layout)
-
-        # Add the Matplotlib widget to the main layout
         main_layout.addWidget(self.matplotlib_widget)
-
-        # Set the main layout for the custom widget
         self.setLayout(main_layout)
 
     def initialize_radio_buttons(self):
-        self.clear_layout()
-        self.clear_button_group()
-        portfolio = self.calculation_tab.get_full_portfolio()
-        for i in range(1, len(portfolio)):
+        self.clear_layout()  # clear old button layout
+        self.clear_button_group()  # clear old button group
+        portfolio = (
+            self.calculation_tab.get_full_portfolio()
+        )  # get the latest portfolio
+        for i in range(1, len(portfolio)):  # for stock in portfolio
             radio_button = QRadioButton(portfolio[i][0])
             self.button_group.addButton(radio_button)
             self.radio_button_layout.addWidget(radio_button)
@@ -95,38 +96,6 @@ class MatplotlibWidget(FigureCanvas):
         )
         FigureCanvas.updateGeometry(self)
 
-    # def plot(self, portfolio):
-    #     self.axes.clear()
-    #     purchase_date = portfolio[0][2]
-    #     selling_date = portfolio[0][3]
-    #     if purchase_date == selling_date:
-    #         QMessageBox.critical(
-    #             self,
-    #             "Error",
-    #             "Purchase Date is on or after Selling Date (which is not possible). Please Select a new pair of dates.",
-    #         )
-    #         self.switch_tabs()
-    #         return
-    #     self.main_window.resize(600, 525)
-    #     for stock in portfolio:
-    #         data = []
-    #         name = stock[0]
-    #         days_between = purchase_date.daysTo(selling_date) + 1
-
-    #         for i in range(0, days_between):
-    #             print("day" + str(i))
-    #             print(self.coin_data[name][purchase_date.addDays(i)])
-    #             data.append(self.coin_data[name][purchase_date.addDays(i)])
-    #         self.axes.plot(data, "r-")
-
-    #     self.axes.set_title("Stock Price Graph")
-    #     self.axes.xaxis.set_major_locator(MaxNLocator(integer=True))
-    #     self.axes.set_xlabel(
-    #         "Days since " + purchase_date.toString("dd-MM-yyyy")
-    #     )  # Set the label for the x-axis
-    #     self.axes.set_ylabel("Price")
-    #     self.draw()
-
     def plot(self, radio_button):
         self.axes.clear()
         portfolio = self.calculation_tab.get_full_portfolio()
@@ -150,14 +119,18 @@ class MatplotlibWidget(FigureCanvas):
             print("day" + str(i))
             print(self.coin_data[name][purchase_date.addDays(i)])
             data.append(self.coin_data[name][purchase_date.addDays(i)])
-        self.axes.plot(data, "r-")
+
+        if data[0] >= data[-1]:
+            self.axes.plot(data, "r-")
+        else:
+            self.axes.plot(data, "g-")
 
         self.axes.set_title("Stock Price Graph")
         self.axes.xaxis.set_major_locator(MaxNLocator(integer=True))
         self.axes.set_xlabel(
             "Days since " + purchase_date.toString("dd-MM-yyyy")
-        )  # Set the label for the x-axis
-        self.axes.set_ylabel("Price")
+        )  # Sset x axis label
+        self.axes.set_ylabel("Price")  # set y axis label
         self.draw()
 
     def switch_tabs(self):
