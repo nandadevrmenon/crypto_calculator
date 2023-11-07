@@ -1,10 +1,6 @@
 # Name: Nandadev Rajeev Menon
 # Student Number : 3069713
 
-# TODO: Remember to fully comment your code
-# TODO: Include a comment 'EXTRA FEATURE' and explain what your Extra Feature does
-# TODO: Don't forget to document your design choices in your UI Design Document
-
 
 # standard imports
 import sys

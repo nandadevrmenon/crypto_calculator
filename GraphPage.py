@@ -53,29 +53,32 @@ class GraphPage(QWidget):
         for i in range(1, len(portfolio)):  # for stock in portfolio
             radio_button = QRadioButton(portfolio[i][0])
             self.button_group.addButton(radio_button)
-            self.radio_button_layout.addWidget(radio_button)
-            if i == 1:
+            self.radio_button_layout.addWidget(
+                radio_button
+            )  # create a radio button and add it to layout
+            if i == 1:  # select the first radio by default
                 radio_button.setChecked(True)
                 self.clicked_button = radio_button
 
-    def clear_layout(self):
+    def clear_layout(self):  # remove all current radio buttons
         while self.radio_button_layout.count():
             item = self.radio_button_layout.takeAt(0)
             widget = item.widget()
             if widget:
                 widget.deleteLater()
 
-    def clear_button_group(self):
+    def clear_button_group(self):  # clears the radio button group that is present
         for button in self.button_group.buttons():
             self.button_group.removeButton(button)
             button.deleteLater()
 
     def handle_radio_button_change(self, button):
-        self.clicked_button = button
-        self.matplotlib_widget.plot(button)
+        self.clicked_button = button  # change the currently clicked button
+        self.matplotlib_widget.plot(
+            button
+        )  # plot the graph for the stock associated to that button
 
-    def plot_graph(self):
-        print(self.clicked_button)
+    def plot_graph(self):  # used to point to plot() (during initialisation)
         self.matplotlib_widget.plot(self.clicked_button)
 
 
@@ -84,20 +87,24 @@ class MatplotlibWidget(FigureCanvas):
         self, coin_data, tabs, main_window, calculation_tab, width=5, height=5, dpi=100
     ):
         self.coin_data = coin_data
-        self.tabs = tabs
+        self.tabs = tabs  # refernce to the main window tabs so as to allow tab-switching when there is an error
         self.main_window = main_window
         self.calculation_tab = calculation_tab
-        self.fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = self.fig.add_subplot(111)
-        self.fig.subplots_adjust(left=0.175)
+        self.fig = Figure(figsize=(width, height), dpi=dpi)  # set figure size and dpi
+        self.axes = self.fig.add_subplot(
+            111
+        )  # make a single subplot within the figure (self.fig) using a 1x1 grid
+        self.fig.subplots_adjust(left=0.175)  # add left margin to the graph
         FigureCanvas.__init__(self, self.fig)
-        FigureCanvas.setSizePolicy(
+        FigureCanvas.setSizePolicy(  # allowing expansion
             self, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         FigureCanvas.updateGeometry(self)
 
-    def plot(self, radio_button):
-        if radio_button is None:
+    def plot(self, radio_button):  # plots graph for acertain stock
+        if (
+            radio_button is None
+        ):  # this happens when the portfolio is empty due to invalid date range for a stock
             QMessageBox.critical(
                 self,
                 "Error",
@@ -105,36 +112,42 @@ class MatplotlibWidget(FigureCanvas):
             )
             self.switch_tabs()
             return
-        self.axes.clear()
-        portfolio = self.calculation_tab.get_full_portfolio()
+        self.axes.clear()  # we clear the old plot before making the new one
+
+        portfolio = self.calculation_tab.get_full_portfolio()  # get latest portfolio
+        # portfolio has the format =
+        # [[purchase_date,sellingdate],[stock1,amount1],[stock2,amount2],[...]...]
         purchase_date = portfolio[0][0]
         selling_date = portfolio[0][1]
-        if purchase_date == selling_date:
+
+        if purchase_date >= selling_date:
             QMessageBox.critical(
                 self,
                 "Error",
                 "Purchase Date is on or after Selling Date (which is not possible). Please Select a new pair of dates.",
             )
-            self.switch_tabs()
+            self.switch_tabs()  # switch tab to portfolio tab
             return
         self.main_window.resize(600, 525)
 
-        data = []
+        data = []  # stock_prices over the range
         name = radio_button.text()
         days_between = purchase_date.daysTo(selling_date) + 1
 
         for i in range(0, days_between):
-            print("day" + str(i))
-            print(self.coin_data[name][purchase_date.addDays(i)])
-            data.append(self.coin_data[name][purchase_date.addDays(i)])
+            data.append(
+                self.coin_data[name][purchase_date.addDays(i)]
+            )  # add the sotck price for each day in range to the data []
 
-        if data[0] >= data[-1]:
+        if data[0] >= data[-1]:  # if loss plot in red color
             self.axes.plot(data, "r-")
-        else:
+        else:  # else plot in green color
             self.axes.plot(data, "g-")
 
         self.axes.set_title("Stock Price Graph")
-        self.axes.xaxis.set_major_locator(MaxNLocator(integer=True))
+        self.axes.xaxis.set_major_locator(
+            MaxNLocator(integer=True)
+        )  # configure the x-axis major tick locator to display integer values
         self.axes.set_xlabel(
             "Days since " + purchase_date.toString("dd-MM-yyyy")
         )  # Sset x axis label
@@ -142,4 +155,4 @@ class MatplotlibWidget(FigureCanvas):
         self.draw()
 
     def switch_tabs(self):
-        self.tabs.setCurrentIndex(0)
+        self.tabs.setCurrentIndex(0)  # switch to portfolio tab

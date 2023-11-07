@@ -210,7 +210,7 @@ class StockSelector(QGridLayout):
                     date_range[-1],  # and last date
                 ]
                 buying_price = (
-                    "The stock " + str(stock_purchased) + "only has a date range "
+                    "The stock " + str(stock_purchased) + " only has a date range "
                 )
                 selling_price = (
                     "of "

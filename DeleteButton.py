@@ -7,9 +7,10 @@ class DeleteButton(QPushButton):
         super().__init__()
         self.remove_stock = remove_stock
         self.id = id
+        self.setToolTip("Delete this stock")
         self.setIcon(QIcon("./delete_icon.png"))  # Set the delete icon
         self.setStyleSheet("background-color: gray;")
-        # self.setText("Delete")  # Set the button text
+        # Set the button text
         self.clicked.connect(
             lambda: self.remove_stock(self.id)
-        )  # Connect the click signal to the action
+        )  # Connect the click signal to the remove_stock action

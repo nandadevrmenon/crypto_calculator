@@ -41,7 +41,9 @@ class PortfolioPage(QWidget):
         main_layout = QVBoxLayout(self)
 
         self.stock_fields_grid_layout = StockSelector(
-            self, self.coin_data, self.update_calculations
+            self,
+            self.coin_data,
+            self.update_calculations,  # we pass in the coin_data, and a refernce to the update calculations method
         )
 
         # Create a Grid Layout for the Date Form
@@ -139,53 +141,72 @@ class PortfolioPage(QWidget):
         self.update_calculations()
 
     def purchase_date_change_handler(self):
+        # get values from date selectors
         purchase_date = self.date_purchased_selector.selectedDate()
         selling_date = self.date_sold_selector.selectedDate()
 
+        # set the sale date to allow only inputs on or after the purchase date
         self.date_sold_selector.setMinimumDate(purchase_date)
+
         if selling_date < purchase_date:
-            self.date_sold_selector.setSelectedDate(purchase_date)
-            self.date_sold_value.setText(
+            self.date_sold_selector.setSelectedDate(
+                purchase_date
+            )  # bring the sale date up to the purchase date
+            self.date_sold_value.setText(  # inform user about error
                 "Selling Date has to be\nafter Purchase date.\nPlease pick a new date."
             )
             self.date_sold_value.setStyleSheet(self.color_red)
         else:
-            self.date_bought_value.setStyleSheet(self.color_black)
+            # remove any color from previous errors
             self.date_sold_value.setStyleSheet(self.color_black)
-            self.update_calculations()
+            # update date value labels
             self.date_bought_value.setText(purchase_date.toString("dd-MM-yyyy"))
             self.date_sold_value.setText(selling_date.toString("dd-MM-yyyy"))
+            # update stock cost calculations using new dates
             self.stock_fields_grid_layout.update_stock_costs(self.get_dates())
 
     def selling_date_change_handler(self):
-        selling_date = self.date_sold_selector.selectedDate()
-        self.date_sold_value.setStyleSheet(self.color_black)
-        self.date_bought_value.setStyleSheet(self.color_black)
-        self.update_calculations()
-        self.date_sold_value.setText(selling_date.toString("dd-MM-yyyy"))
-        self.stock_fields_grid_layout.update_stock_costs(self.get_dates())
+        selling_date = self.date_sold_selector.selectedDate()  # get value from selector
+        self.date_sold_value.setStyleSheet(self.color_black)  # remove old red color
+        self.date_sold_value.setText(
+            selling_date.toString("dd-MM-yyyy")
+        )  # set the value label
+        self.stock_fields_grid_layout.update_stock_costs(
+            self.get_dates()
+        )  # update calculations using new dates
 
-    def update_calculations(self):
+    def update_calculations(self):  # updates total profit cost calculations
         try:
-            portfolio = self.stock_fields_grid_layout.get_stock_portfolio()
-            dates = self.get_dates()
+            portfolio = (
+                self.stock_fields_grid_layout.get_stock_portfolio()
+            )  # get latest portfolio
+            dates = self.get_dates()  # get current dates
 
             total_purchase_cost = 0
             total_selling_price = 0
 
-            for stock in portfolio:
+            for (
+                stock
+            ) in (
+                portfolio
+            ):  # for all stocks in portoflio find total buying and selling cost
                 buying_cost = self.coin_data[stock[0]][dates[0]] * int(stock[1])
                 selling_price = self.coin_data[stock[0]][dates[1]] * int(stock[1])
                 total_purchase_cost += buying_cost
                 total_selling_price += selling_price
-
+            # round to 3 decimal places
             total_selling_price = round(total_selling_price, 3)
             total_purchase_cost = round(total_purchase_cost, 3)
-            profit = round(total_selling_price - total_purchase_cost, 3)
-            self.purchase_price_value.setText("€" + str(total_purchase_cost))
+            profit = round(
+                total_selling_price - total_purchase_cost, 3
+            )  # calculate profit
+
+            self.purchase_price_value.setText(
+                "€" + str(total_purchase_cost)
+            )  # set labels
             self.selling_price_value.setText("€" + str(total_selling_price))
             self.profit_value.setText("€" + str(profit))
-            if profit < 0:
+            if profit < 0:  # if no profit mark as red else mark as green
                 self.profit_value.setStyleSheet(self.color_red)
             else:
                 self.profit_value.setStyleSheet(self.color_green)
@@ -193,24 +214,14 @@ class PortfolioPage(QWidget):
         except Exception as e:
             print(e)
 
-    # def get_portfolio(self):
-    #     portfolio = []
-    #     stock_purchased = self.combo_for_stocks.currentText()
-    #     amount_purchased = self.stock_amount_spin.value()
-    #     purchase_date = self.date_purchased_selector.selectedDate()
-    #     selling_date = self.date_sold_selector.selectedDate()
-    #     portfolio.append(
-    #         [stock_purchased, amount_purchased, purchase_date, selling_date]
-    #     )
-    #     return portfolio
-
-    def get_full_portfolio(self):
+    def get_full_portfolio(
+        self,
+    ):  # gets stock portolfio from StockSelector and then appends the date range to it
         portfolio = self.stock_fields_grid_layout.get_stock_portfolio()
-        print(portfolio)
         portfolio.insert(0, self.get_dates())
         return portfolio
 
-    def get_dates(self):
+    def get_dates(self):  # get the currently selected dates from the date selectorss
         return [
             self.date_purchased_selector.selectedDate(),
             self.date_sold_selector.selectedDate(),
