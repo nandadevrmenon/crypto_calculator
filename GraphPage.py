@@ -97,6 +97,14 @@ class MatplotlibWidget(FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
     def plot(self, radio_button):
+        if radio_button is None:
+            QMessageBox.critical(
+                self,
+                "Error",
+                "No valid date ranges provided for graph.Please select a Valid Date range and try again.",
+            )
+            self.switch_tabs()
+            return
         self.axes.clear()
         portfolio = self.calculation_tab.get_full_portfolio()
         purchase_date = portfolio[0][0]

@@ -206,6 +206,7 @@ class PortfolioPage(QWidget):
 
     def get_full_portfolio(self):
         portfolio = self.stock_fields_grid_layout.get_stock_portfolio()
+        print(portfolio)
         portfolio.insert(0, self.get_dates())
         return portfolio
 
